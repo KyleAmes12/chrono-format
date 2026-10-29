@@ -28,7 +28,7 @@ for(const name of names){const card=idx.byName.get(N(name));if(!card)continue;co
 const mock=[...entries.filter(e=>e.card).map(e=>({name:String(e.card.id),qty:e.qty,part:e.part})),{name:String(card.id),qty:1,part:"main"}];
 const v=validate(mock,idx);const proposed=v.entries[v.entries.length-1];
 if(proposed.reasons.length||old>=proposed.limit||proposed.era==="Unknown")continue;
-if(v.counts.modernAll>10||v.counts.main>40)continue;
+if((v.counts.modernAll>10&&v.counts.modernAll>10+(v.counts.main>40?1:0))|| (v.counts.main>40 && v.counts.main!==41))continue;
 const fit=topicsFound.filter(k=>(pools[k]||[]).includes(name));
 out.push({card,era:proposed.era,fit,old,max:proposed.limit});}
 return out.sort((a,b)=> (a.era==="GOAT"?-8:a.era==="Edison"?-3:1)-(b.era==="GOAT"?-8:b.era==="Edison"?-3:1) - (a.fit.length-b.fit.length)*10);}
@@ -41,8 +41,8 @@ if(v.counts.main>40){box.append(el("p","danger","Remove excess cards before addi
 const list=candidates(idx,v.entries,topicsFound);if(!list.length){box.append(el("p","muted","No verified suggestions found for this strategy with the current database. Try a different goal."));return}
 const heading=el("h3","", "Suggested legal additions");box.append(heading);
 if(needed)box.append(el("p","muted","Prioritize at least "+needed+" more GOAT cards before filling remaining slots."));
-if(!missing){box.append(el("p","muted","Your deck is full. These are possible replacements, not additions."));}
-for(const s of list.slice(0,14)){const row=el("div","recommend"),body=el("div"),name=el("strong","",s.card.name),meta=el("small","",s.era+" · max "+s.max+" copies · "+(s.fit.length?"Supports "+s.fit.join(", "):"Flexible utility"));body.append(name,meta);row.append(body);const add=el("button","secondary","Add +1");add.disabled=!missing||(needed>=(missing)&&s.era!=="GOAT");add.onclick=()=>{const val=$("deck").value.trim();$("deck").value=(val?val+"\n":"")+"1 "+s.card.name;build()};row.append(add);box.append(row)}
+if(!missing){box.append(el("p","muted","Your deck is full. These are possible replacements, not additions. Remove a card before using Add +1."));}
+for(const s of list.slice(0,14)){const row=el("div","recommend"),body=el("div"),name=el("strong","",s.card.name),meta=el("small","",s.era+" · max "+s.max+" copies · "+(s.fit.length?"Supports "+s.fit.join(", "):"Flexible utility"));body.append(name,meta);row.append(body);const add=el("button","secondary","Add +1");add.disabled=!missing||(needed>=(missing)&&s.era!=="GOAT");add.onclick=()=>{const val=$("deck").value.trim();$("deck").value=(val?val+"\n":"")+"#main\n1 "+s.card.name;build()};row.append(add);box.append(row)}
 box.append(el("p","muted","Suggestions are filtered through the current card database and validator, but are not a guarantee of optimal strategy. Check Konami's official banlist for changes."));
 }catch(err){shown("builderResults","Unable to load suggestions: "+err.message)}finally{btn.disabled=false}}
 function answer(q){const t=q.toLowerCase(),p=parse($("deck").value),tot=p.rows.filter(r=>r.part==="main").reduce((s,r)=>s+r.qty,0);
